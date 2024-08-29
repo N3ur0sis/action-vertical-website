@@ -4,11 +4,9 @@ import { Suspense } from "react";
 
 export default async function Page() {
   return (
-    <main className="text-center pt-16 px-5">
-      <h1 className="font-bold text-4xl md:text-5xl mb-5">Tous les articles</h1>
-      <Suspense fallback="Loading...">
+    <main className="pt-16 px-5">
+      <h1 className="text-center text-gray-800 text-4xl md:text-4l mb-5 uppercase font-bold">Tous les articles</h1>
         <PostsList />
-      </Suspense>
     </main>
   );
 }
