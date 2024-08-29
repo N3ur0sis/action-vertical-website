@@ -10,10 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post{
-  id Int @id @default(autoincrement())
-  title String
-  body String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Post {
+  id         Int      @id @default(autoincrement())
+  title      String
+  body       String
+  coverImage String   @default("/bg.jpeg") // Champ obligatoire avec une valeur par défaut
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
+
