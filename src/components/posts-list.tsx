@@ -104,7 +104,7 @@ export default function PostsList() {
             <div className="p-5 flex-1 flex flex-col justify-between">
               <div>
                 <h5 className="text-xl font-bold text-gray-900 mb-2" dangerouslySetInnerHTML={{ __html: truncateHTML(post.title, 50) }}></h5>
-                <p className="text-xs text-gray-500 mb-2">Publié le {new Date(post.createdAt).toLocaleDateString('fr-FR')}</p>
+                <p className="text-xs text-gray-500 mb-2">Publié le {new Date(post.updatedAt).toLocaleDateString('fr-FR')}</p>
                 <div className="text-sm text-gray-700 mb-4" dangerouslySetInnerHTML={{ __html: truncateHTML(post.body, 250) }}></div>
               </div>
               <Link href={`/posts/${post.id}`} className="inline-flex items-center px-5 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 w-auto">

@@ -8,11 +8,13 @@ import { redirect } from "next/navigation";
 export async function createPost({
   title,
   content,
-  coverImage = "/bg.jpeg", // Valeur par défaut
+  coverImage = "/bg.jpeg",
+  isPublished = false,  // Nouveau paramètre pour définir l'état de publication
 }: {
   title: string;
   content: string;
   coverImage?: string;
+  isPublished: boolean;
 }) {
   const session = await getKindeServerSession();
   if (!(await session.isAuthenticated())) {
@@ -23,7 +25,8 @@ export async function createPost({
     data: {
       title,
       body: content,
-      coverImage, // Inclure l'image de couverture
+      coverImage,
+      isPublished,  // Enregistre l'état de publication
     },
   });
 

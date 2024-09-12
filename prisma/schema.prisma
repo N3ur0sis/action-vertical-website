@@ -11,11 +11,49 @@ datasource db {
 }
 
 model Post {
-  id         Int      @id @default(autoincrement())
-  title      String
-  body       String
-  coverImage String   @default("/bg.jpeg") // Champ obligatoire avec une valeur par défaut
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  title       String
+  body        String
+  coverImage  String   @default("/bg.jpeg")
+  isPublished Boolean  @default(false)  // Nouveau champ pour gérer la publication
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
+
+
+
+model NavbarItem {
+  id        Int      @id @default(autoincrement())
+  title     String
+  route     String?  // Peut être null pour les items de type menu parent
+  order     Int
+  parentId  Int?     // Si null, l'item est un item de premier niveau
+  isActive  Boolean  @default(true)
+  type      String   @default("PAGE") // 'PAGE', 'MENU', 'LINK' par exemple
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  parent   NavbarItem?  @relation("ParentChild", fields: [parentId], references: [id])
+  children NavbarItem[] @relation("ParentChild")
+
+  // Relation avec le contenu de la page
+  pageContent PageContent[] @relation("PageContentOnNavbarItem")
+}
+
+
+model PageContent {
+  id          Int      @id @default(autoincrement())
+  pageSlug    String   // Relie le contenu à une page via le slug de la page
+  contentType String   // 'TITLE', 'SECTION', 'IMAGE', 'TABLE', 'VIDEO', 'LINK', etc.
+  content     String   // Stocke les données sous forme de JSON en chaîne de caractères
+  order       Int      // Ordre d'affichage du contenu sur la page
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation avec NavbarItem pour lier le contenu à la navigation
+  navbarItemId Int?    // Permet de lier du contenu à un élément de la barre de navigation
+  navbarItem   NavbarItem? @relation("PageContentOnNavbarItem", fields: [navbarItemId], references: [id])
+}
+
 
