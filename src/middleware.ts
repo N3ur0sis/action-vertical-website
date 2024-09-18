@@ -7,10 +7,10 @@ export default function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/create-post", 
-    "/files/:path*", 
-    "/gallery/:path*", 
+    "/dashboard/create-post", 
+    "/dashboard/files/:path*", 
+    "/dashboard/gallery/:path*", 
     "/dashboard/:path*", 
-    "/posts/:path*"
+    "/dashboard/posts/:path*"
   ],
 };

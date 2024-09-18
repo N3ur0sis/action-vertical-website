@@ -9,10 +9,16 @@ export async function GET(request: Request) {
 
   try {
     const posts = await prisma.post.findMany({
-      orderBy: { createdAt: 'desc' },
+      where: {
+        isPublished: true,  // Filtrer pour n'obtenir que les articles publiés
+      },
+      orderBy: {
+        updatedAt: 'desc',  // Trier par date de mise à jour (du plus récent au plus ancien)
+      },
       skip,
       take: limit,
     });
+
     return NextResponse.json(posts);
   } catch (error) {
     console.error("Error fetching posts:", error);

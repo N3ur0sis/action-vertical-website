@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import SimilarPosts from "./similar-post";
 
+
 export default async function Post({ params }: { params: { id: string } }) {
   const post = await prisma.post.findUnique({
     where: {

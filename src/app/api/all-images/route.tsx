@@ -5,18 +5,22 @@ import path from 'path';
 export async function GET() {
   try {
     const imageDir = path.join(process.cwd(), 'public/uploads');
+    if (!fs.existsSync(imageDir)) {
+      console.error("Directory not found:", imageDir);
+      return NextResponse.json({ error: "Directory not found" }, { status: 404 });
+    }
+
     const allImages = fs.readdirSync(imageDir)
-      .filter(file => !file.startsWith('.')) // Filtrer les fichiers cachés
-      .map(file => `/uploads/${file}`);
+      .filter(file => !file.startsWith('.') && (file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')))
+      .map(file => ({
+        url: `/uploads/${file}`,
+        ctime: fs.statSync(path.join(imageDir, file)).ctime.getTime()
+      }));
 
-    // Tri des images par date de création (du plus récent au plus ancien)
-    allImages.sort((a, b) => {
-      const aTime = fs.statSync(path.join(imageDir, path.basename(a))).ctime.getTime();
-      const bTime = fs.statSync(path.join(imageDir, path.basename(b))).ctime.getTime();
-      return bTime - aTime;
-    });
+    // Sort images by creation time, most recent first
+    allImages.sort((a, b) => b.ctime - a.ctime);
 
-    return NextResponse.json({ images: allImages });
+    return NextResponse.json({ images: allImages.map(image => image.url) });
   } catch (error) {
     console.error("Error fetching images:", error);
     return NextResponse.json({ error: "Failed to fetch images" }, { status: 500 });

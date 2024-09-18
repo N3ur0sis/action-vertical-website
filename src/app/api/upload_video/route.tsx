@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    const videoFile = formData.get("video");
+    const videoFile = formData.get("file"); // Froala envoie les fichiers sous le nom "file"
 
     if (!videoFile) {
       return NextResponse.json({ error: "Aucun fichier vidéo reçu" }, { status: 400 });
