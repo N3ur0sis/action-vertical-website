@@ -61,15 +61,16 @@ export default function PostsList() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 50 && hasMore && !loading) {
-        setPage(prevPage => prevPage + 1);
-        setLoading(true);
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || loading || !hasMore) {
+        return;
       }
+      setPage(prevPage => prevPage + 1);
     };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loading]);
+  
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, hasMore]);
+  
 
   const truncateHTML = (html, maxLength) => {
     const tempDiv = typeof window !== "undefined" ? document.createElement("div") : null;

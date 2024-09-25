@@ -17,7 +17,6 @@ const ImageSection = ({ section, updateSection }) => {
     updateSection({ src: newSrc });
   };
 
-
   return (
     <div>
       <input
@@ -29,7 +28,7 @@ const ImageSection = ({ section, updateSection }) => {
       />
 
       <div className="mt-2">
-        <img src={src} alt={alt} className="w-32 h-32 object-cover" />
+        <img src={src} className="w-32 h-32 object-cover" />
       </div>
     </div>
   );
