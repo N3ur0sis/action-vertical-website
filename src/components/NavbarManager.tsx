@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { FiEdit, FiTrash, FiPlusCircle } from 'react-icons/fi';
 
 const ItemType = 'NAVBAR_ITEM';
 
+const generateRouteFromTitle = (title) => {
+  return '/' + title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+};
+
 const DraggableItem = ({
   item,
-  index,
   moveItem,
   handleDelete,
   startEditing,
@@ -15,10 +17,7 @@ const DraggableItem = ({
   addItemToMenu,
   children,
 }) => {
-  const [, ref] = useDrag({
-    type: ItemType,
-    item: { id: item.id, index, parentId: item.parentId, type: item.type },
-  });
+  const ref = React.useRef(null);
 
   const [, drop] = useDrop({
     accept: ItemType,
@@ -26,38 +25,75 @@ const DraggableItem = ({
       if (draggedItem.id !== item.id) {
         if (item.type === 'MENU' && draggedItem.type === 'MENU') {
           return; // Empêche les menus d'être imbriqués
-        } else if (item.type === 'MENU' && draggedItem.type !== 'MENU' && draggedItem.parentId !== item.id) {
+        } else if (item.type === 'MENU') {
           addItemToMenu(draggedItem.id, item.id);
-        } else if (item.type !== 'MENU') {
-          moveItem(draggedItem.index, index, item.parentId);
-          draggedItem.index = index;
-          draggedItem.parentId = item.parentId;
+        } else {
+          moveItem(draggedItem.id, item.id);
         }
+        draggedItem.parentId = item.parentId;
       }
     },
   });
 
+  const [{ isDragging }, drag] = useDrag({
+    type: ItemType,
+    item: { id: item.id, type: item.type },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(drop(ref));
+
   return (
     <li
-      ref={(node) => ref(drop(node))}
-      className={`mb-2 p-4 border rounded bg-white shadow ${!item.isActive ? 'opacity-50' : ''}`}
+      ref={ref}
+      className={`mb-2 p-4 border rounded bg-white shadow ${
+        !item.isActive ? 'opacity-50' : ''
+      } ${isDragging ? 'opacity-25' : ''}`}
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <span className="font-medium">{item.title.toUpperCase()} - {item.type === 'EXTERNAL_LINK' ? 'LIEN EXTERNE' : item.type}</span>
-          <span className={`text-xs ${item.isActive ? 'text-green-600' : 'text-red-600'}`}>
+          <span className="font-medium">
+            {item.title.toUpperCase()} -{' '}
+            {item.type === 'EXTERNAL_LINK' ? 'LIEN EXTERNE' : item.type}
+          </span>
+          <span
+            className={`text-xs ${
+              item.isActive ? 'text-green-600' : 'text-red-600'
+            }`}
+          >
             {item.isActive ? 'Actif' : 'Inactif'}
           </span>
         </div>
         <div className="flex space-x-2">
           {item.type === 'PAGE' && (
-            <button onClick={() => goToPageBuilder(item.route)} className="text-blue-500 hover:underline">Page Builder</button>
+            <button
+              onClick={() => goToPageBuilder(item.route)}
+              className="text-blue-500 hover:underline"
+            >
+              Page Builder
+            </button>
           )}
-          <button onClick={() => startEditing(item)} className="text-blue-500 hover:underline">Modifier</button>
-          <button onClick={() => handleDelete(item.id, item.title)} className="text-red-500 hover:underline">Supprimer</button>
+          <button
+            onClick={() => startEditing(item)}
+            className="text-blue-500 hover:underline"
+          >
+            Modifier
+          </button>
+          <button
+            onClick={() => handleDelete(item.id, item.title)}
+            className="text-red-500 hover:underline"
+          >
+            Supprimer
+          </button>
         </div>
       </div>
-      {children && <ul className="pl-4 mt-2 space-y-2 border-l border-gray-200">{children}</ul>}
+      {children && (
+        <ul className="pl-4 mt-2 space-y-2 border-l border-gray-200">
+          {children}
+        </ul>
+      )}
     </li>
   );
 };
@@ -75,15 +111,29 @@ const NavbarManager = ({ showAlert }) => {
     fetch('/api/navbar')
       .then((res) => res.json())
       .then((data) => setNavbarItems(data))
-      .catch(() => showAlert('error', 'Erreur lors du chargement des éléments de la navbar.'));
+      .catch(() =>
+        showAlert(
+          'error',
+          'Erreur lors du chargement des éléments de la navbar.'
+        )
+      );
   }, []);
 
-  const moveItem = (fromIndex, toIndex, newParentId) => {
+  const moveItem = (draggedItemId, hoverItemId) => {
     setNavbarItems((prevItems) => {
-      const updatedItems = [...prevItems];
-      const [movedItem] = updatedItems.splice(fromIndex, 1);
-      movedItem.parentId = newParentId;
-      updatedItems.splice(toIndex, 0, movedItem);
+      const draggedItem = prevItems.find((item) => item.id === draggedItemId);
+      const hoverItem = prevItems.find((item) => item.id === hoverItemId);
+
+      if (!draggedItem || !hoverItem) return prevItems;
+
+      // Mise à jour du parentId du draggedItem
+      draggedItem.parentId = hoverItem.parentId;
+
+      // Réorganisation de l'ordre
+      const updatedItems = prevItems.filter((item) => item.id !== draggedItemId);
+      const hoverIndex = updatedItems.findIndex((item) => item.id === hoverItemId);
+      updatedItems.splice(hoverIndex, 0, draggedItem);
+
       return updatedItems;
     });
     setPendingChanges(true);
@@ -121,26 +171,20 @@ const NavbarManager = ({ showAlert }) => {
         showAlert('success', 'Réorganisation réussie.');
         setPendingChanges(false);
       })
-      .catch(() => showAlert('error', 'Erreur lors de la réorganisation des éléments.'));
+      .catch(() =>
+        showAlert('error', 'Erreur lors de la réorganisation des éléments.')
+      );
   };
 
   const handleAddOrEditItem = () => {
-    const titleExists = navbarItems.some(
-      (item) =>
-        item.title.toLowerCase() === newItemTitle.toLowerCase() &&
-        (!editingItem || item.id !== editingItem.id)
-    );
-
-    if (titleExists) {
-      showAlert('error', 'Un élément avec ce titre existe déjà.');
-      return;
-    }
+    // Suppression de la vérification d'unicité du titre
 
     const method = editingItem ? 'POST' : 'POST';
     const body = {
       id: editingItem?.id,
       title: newItemTitle,
       type: newItemType,
+      route: newItemType === 'PAGE' ? generateRouteFromTitle(newItemTitle) : null,
       externalLink: newItemType === 'EXTERNAL_LINK' ? externalLink : null,
       parentId: editingItem?.parentId || null,
       order: editingItem ? editingItem.order : navbarItems.length + 1,
@@ -163,10 +207,16 @@ const NavbarManager = ({ showAlert }) => {
           .then((res) => res.json())
           .then((data) => setNavbarItems(data));
         resetForm();
-        showAlert('success', editingItem ? 'Élément modifié avec succès.' : 'Élément ajouté avec succès.');
+        showAlert(
+          'success',
+          editingItem ? 'Élément modifié avec succès.' : 'Élément ajouté avec succès.'
+        );
       })
       .catch(() =>
-        showAlert('error', `Erreur lors de la ${editingItem ? 'modification' : 'création'} de l'élément.`)
+        showAlert(
+          'error',
+          `Erreur lors de la ${editingItem ? 'modification' : 'création'} de l'élément.`
+        )
       );
   };
 
@@ -188,9 +238,10 @@ const NavbarManager = ({ showAlert }) => {
           .then((data) => setNavbarItems(data));
         showAlert('success', 'Élément supprimé avec succès.');
       })
-      .catch(() => showAlert('error', "Erreur lors de la suppression de l'élément."));
+      .catch(() =>
+        showAlert('error', "Erreur lors de la suppression de l'élément.")
+      );
   };
-  
 
   const goToPageBuilder = (route) => {
     window.location.href = `/dashboard/page-builder${route}`;
@@ -208,17 +259,16 @@ const NavbarManager = ({ showAlert }) => {
     setEditingItem(item);
     setNewItemTitle(item.title);
     setNewItemType(item.type);
-    setExternalLink(item.route);
+    setExternalLink(item.externalLink || '');
     setIsActive(item.isActive);
   };
 
   const renderItems = (items, parentId = null) =>
     items
       .filter((item) => item.parentId === parentId)
-      .map((item, index) => (
+      .map((item) => (
         <DraggableItem
           key={item.id}
-          index={index}
           item={item}
           moveItem={moveItem}
           handleDelete={handleDeleteItem}
@@ -270,16 +320,14 @@ const NavbarManager = ({ showAlert }) => {
           </div>
           <button
             onClick={handleAddOrEditItem}
-            className="bg-blue-500 text-white p-2 rounded"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
             {editingItem ? 'Modifier' : 'Ajouter'}
           </button>
         </div>
         <div className="border p-4 rounded bg-gray-100">
           <h3 className="font-bold text-lg mb-2">Éléments de la navigation</h3>
-          <ul>
-            {renderItems(navbarItems)}
-          </ul>
+          <ul>{renderItems(navbarItems)}</ul>
         </div>
         {pendingChanges && (
           <div>

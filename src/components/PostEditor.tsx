@@ -9,6 +9,7 @@ import InsertGalleryModal from "./post-editor/InsertGalleryModal";
 import ImagePreviewModal from "./post-editor/ImagePreviewModal";
 import Alert from "./alert";
 import { createPost } from "@/actions/actions";
+import dynamic from 'next/dynamic';
 
 // Skeleton component for loading state
 const SkeletonLoader = () => (
@@ -39,6 +40,12 @@ export default function PostEditor() {
   const [alert, setAlert] = useState({ type: "", message: "", isVisible: false });
   const [loading, setLoading] = useState(true);
 
+
+  const ImageGalleryModal = dynamic(() => import('./post-editor/ImageGalleryModal'));
+  const FileModal = dynamic(() => import('./post-editor/FileModal'));
+  const InsertGalleryModal = dynamic(() => import('./post-editor/InsertGalleryModal'));
+  const ImagePreviewModal = dynamic(() => import('./post-editor/ImagePreviewModal'));
+  
   useEffect(() => {
     // Simulate a loading state
     const timer = setTimeout(() => setLoading(false), 1000);
