@@ -28,7 +28,12 @@ export default function Header() {
       try {
         const res = await fetch("/api/navbar");
         const data = await res.json();
-        setMenuItems(data);
+        // Transforme les titres en majuscules
+        const transformedItems = data.map((item) => ({
+          ...item,
+          title: item.title.toUpperCase(),
+        }));
+        setMenuItems(transformedItems);
       } catch (error) {
         console.error("Failed to fetch menu items:", error);
       }
@@ -43,7 +48,7 @@ export default function Header() {
 
   const renderMenuItems = (items, isChild = false) => {
     return items
-      .filter(item => item.isActive && (item.parentId === null || isChild))
+      .filter((item) => item.isActive && (item.parentId === null || isChild))
       .map((item) => {
         if (item.type === "MENU" && item.children && item.children.length > 0) {
           return (
@@ -192,7 +197,7 @@ export default function Header() {
             </li>
           ))}
           {menuItems
-            .filter(item => item.isActive && item.parentId === null)
+            .filter((item) => item.isActive && item.parentId === null)
             .map((item, index) =>
               item.type === "MENU" ? (
                 <li key={item.title} className="relative">
@@ -228,7 +233,7 @@ export default function Header() {
                 <li key={item.title}>
                   <Link
                     href={item.route}
-                    className="block py-2 text-gray-700 hover:text-gray-500"
+                    className="block py-2 text-gray-700 hover:text-gray-500 capitalize"
                   >
                     {item.title}
                   </Link>

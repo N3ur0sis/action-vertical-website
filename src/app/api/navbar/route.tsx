@@ -16,30 +16,93 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request) {
   try {
-    const { id, title, order, parentId, type, externalLink, isActive } = await request.json();
+    const { title, order, parentId, type, externalLink, isActive } = await request.json();
 
     if (!title || typeof title !== 'string') {
       return NextResponse.json({ error: 'Title is required and must be a string' }, { status: 400 });
     }
 
-    const slug = title.toLowerCase().replace(/ /g, '-');
-
     if (fixedPages.includes(title.toUpperCase())) {
-      return NextResponse.json({ error: `Cannot add or modify fixed page: ${title}` }, { status: 400 });
+      return NextResponse.json({ error: `Cannot add fixed page: ${title}` }, { status: 400 });
     }
 
+    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
     const route = type === 'EXTERNAL_LINK' ? externalLink : `/pages/${slug}`;
-    let newItem;
 
-    if (id) {
+    const newItem = await prisma.navbarItem.create({
+      data: {
+        title,
+        route,
+        order,
+        parentId,
+        type,
+        isActive,
+      },
+    });
+
+    if (type === 'PAGE') {
+      await prisma.pageContent.create({
+        data: {
+          pageSlug: slug,
+          contentType: 'TITLE',
+          content: JSON.stringify({ text: `Bienvenue sur la page ${title}` }),
+          order: 1,
+        },
+      });
+    }
+
+    return NextResponse.json(newItem);
+  } catch (error) {
+    console.error("Error adding navbar item:", error);
+    return NextResponse.json({ error: "Failed to add navbar item" }, { status: 500 });
+  }
+}
+
+export async function PUT(request) {
+  try {
+    const data = await request.json();
+
+    if (Array.isArray(data)) {
+      // Gestion de la réorganisation (mise à jour de plusieurs éléments)
+      const updatePromises = data.map(item => {
+        if (!item.id) {
+          throw new Error('Item ID is required for update');
+        }
+        return prisma.navbarItem.update({
+          where: { id: item.id },
+          data: { order: item.order, parentId: item.parentId },
+        });
+      });
+
+      await Promise.all(updatePromises);
+      return NextResponse.json({ success: true });
+    } else if (typeof data === 'object') {
+      // Mise à jour d'un seul élément
+      const { id, title, order, parentId, type, externalLink, isActive } = data;
+
+      if (!id) {
+        return NextResponse.json({ error: 'ID is required for update' }, { status: 400 });
+      }
+
+      if (!title || typeof title !== 'string') {
+        return NextResponse.json({ error: 'Title is required and must be a string' }, { status: 400 });
+      }
+
+      if (fixedPages.includes(title.toUpperCase())) {
+        return NextResponse.json({ error: `Cannot modify fixed page: ${title}` }, { status: 400 });
+      }
+
+      const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+      const route = type === 'EXTERNAL_LINK' ? externalLink : `/pages/${slug}`;
+
       const existingItem = await prisma.navbarItem.findUnique({ where: { id } });
       if (!existingItem) {
         return NextResponse.json({ error: 'Item not found' }, { status: 404 });
       }
 
-      newItem = await prisma.navbarItem.update({
+      const updatedItem = await prisma.navbarItem.update({
         where: { id },
         data: {
           title,
@@ -50,75 +113,32 @@ export async function POST(request: Request) {
           isActive,
         },
       });
-    } else {
-      newItem = await prisma.navbarItem.create({
-        data: {
-          title,
-          route,
-          order,
-          parentId,
-          type,
-          isActive: isActive,
-        },
-      });
 
-      if (type === 'PAGE') {
-        await prisma.pageContent.create({
-          data: {
-            pageSlug: slug,
-            contentType: 'TITLE',
-            content: JSON.stringify({ text: `Bienvenue sur la page ${title}` }),
-            order: 1,
-          },
+      // Mettre à jour le contenu de la page si le titre ou le type a changé
+      if (type === 'PAGE' && existingItem.title !== title) {
+        // Mettre à jour le pageSlug dans pageContent
+        await prisma.pageContent.updateMany({
+          where: { pageSlug: existingItem.route.replace('/pages/', '') },
+          data: { pageSlug: slug },
         });
       }
-    }
 
-    return NextResponse.json(newItem);
+      return NextResponse.json(updatedItem);
+    } else {
+      return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
+    }
   } catch (error) {
-    console.error("Error adding or updating navbar item:", error);
-    return NextResponse.json({ error: "Failed to add or update navbar item" }, { status: 500 });
+    console.error("Error updating navbar item(s):", error);
+    return NextResponse.json({ error: "Failed to update navbar item(s)" }, { status: 500 });
   }
 }
 
-export async function PUT(request: Request) {
+export async function DELETE(request) {
   try {
-    const data = await request.json();
+    const { id } = await request.json();
 
-    if (!data || typeof data !== 'object' || !Array.isArray(data)) {
-      return NextResponse.json({ error: "Data must be an array of objects" }, { status: 400 });
-    }
-
-    const updatePromises = data.map(item => {
-      if (!item.id) {
-        throw new Error('Item ID is required for update');
-      }
-      return prisma.navbarItem.update({
-        where: { id: item.id },
-        data: { order: item.order, parentId: item.parentId },
-      });
-    });
-
-    await Promise.all(updatePromises);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error reordering navbar items:", error);
-    return NextResponse.json({ error: "Failed to reorder navbar items" }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { id, title } = await request.json();
-
-    if (!id || !title || typeof title !== 'string') {
-      return NextResponse.json({ error: 'ID and Title are required and must be valid' }, { status: 400 });
-    }
-
-    const slug = title.toLowerCase().replace(/ /g, '-');
-
-    if (fixedPages.includes(title.toUpperCase())) {
-      return NextResponse.json({ error: `Cannot delete fixed page: ${title}` }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
     const existingItem = await prisma.navbarItem.findUnique({ where: { id } });
@@ -126,13 +146,19 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
 
+    if (fixedPages.includes(existingItem.title.toUpperCase())) {
+      return NextResponse.json({ error: `Cannot delete fixed page: ${existingItem.title}` }, { status: 400 });
+    }
+
     if (existingItem.type === 'PAGE') {
       // Supprimer les contenus associés dans PageContent
+      const slug = existingItem.route.replace('/pages/', '');
       await prisma.pageContent.deleteMany({
         where: { pageSlug: slug },
       });
     }
 
+    // Supprimer l'élément navbar
     const deletedItem = await prisma.navbarItem.delete({
       where: { id },
     });

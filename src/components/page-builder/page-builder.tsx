@@ -1,4 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+// components/PageBuilder.jsx
+
+'use client';
+
+import React, { useState, useRef, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { FiTrash2, FiMove, FiPlus } from 'react-icons/fi';
@@ -10,36 +14,13 @@ import ButtonSection from './ButtonSection';
 import TableSection from './TableSection';
 import PdfSection from './PdfSection';
 import Alert from '../alert';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 
 const ItemType = 'SECTION';
 
-const PageBuilder = ({ pageId }) => {
-  const [sections, setSections] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PageBuilder = ({ pageId, initialSections }) => {
+  const [sections, setSections] = useState(initialSections || []);
   const [alert, setAlert] = useState(null);
   const scrollRef = useRef(null);
-
-  useEffect(() => {
-    loadSections();
-  }, [pageId]);
-
-  const loadSections = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/page-content?slug=${pageId}`);
-      if (!response.ok) {
-        throw new Error("Échec du chargement du contenu de la page");
-      }
-      const data = await response.json();
-      setSections(data);
-    } catch (err) {
-      setAlert({ type: 'warning', message: err.message });
-    } finally {
-      setLoading(false);
-    }
-  }, [pageId]);
 
   const moveSection = useCallback((dragIndex, hoverIndex) => {
     setSections((prevSections) => {
@@ -140,13 +121,14 @@ const PageBuilder = ({ pageId }) => {
           throw new Error("Échec de l'ajout de la section");
         }
 
-        await loadSections();
+        const createdSection = await response.json();
+        setSections((prevSections) => [...prevSections, createdSection]);
         setAlert({ type: 'info', message: `${type} ajouté avec succès.` });
       } catch (err) {
         setAlert({ type: 'warning', message: err.message });
       }
     },
-    [loadSections, pageId, sections.length]
+    [pageId, sections.length]
   );
 
   const handleSave = useCallback(async () => {
@@ -167,11 +149,10 @@ const PageBuilder = ({ pageId }) => {
       }
 
       setAlert({ type: 'success', message: 'Page enregistrée avec succès' });
-      await loadSections();
     } catch (err) {
       setAlert({ type: 'warning', message: err.message });
     }
-  }, [sections, loadSections]);
+  }, [sections]);
 
   const handleDeleteSection = useCallback(
     async (sectionId) => {
@@ -188,13 +169,15 @@ const PageBuilder = ({ pageId }) => {
           throw new Error("Échec de la suppression de la section");
         }
 
-        await loadSections();
+        setSections((prevSections) =>
+          prevSections.filter((section) => section.id !== sectionId)
+        );
         setAlert({ type: 'info', message: 'Section supprimée avec succès.' });
       } catch (err) {
         setAlert({ type: 'warning', message: err.message });
       }
     },
-    [loadSections]
+    []
   );
 
   return (
@@ -206,8 +189,10 @@ const PageBuilder = ({ pageId }) => {
           className="flex-1 p-4 overflow-y-auto"
           style={{ maxHeight: '75vh' }}
         >
-          {loading ? (
-            <Skeleton count={5} height={150} className="mb-4" />
+          {sections.length === 0 ? (
+            <div className="text-center py-12">
+              <p>Aucune section. Ajoutez-en une pour commencer !</p>
+            </div>
           ) : (
             sections.map((section, index) => renderSection(section, index))
           )}
@@ -282,19 +267,12 @@ const DraggableItem = ({ children, index, moveSection }) => {
 
       if (dragIndex === hoverIndex) return;
 
-      // Détermine les coordonnées du rectangle de l'élément survolé
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-
-      // Calcule la position verticale du milieu de l'élément survolé
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-      // Calcule la position du curseur
+      const hoverMiddleY =
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
-
-      // Calcule la position du curseur par rapport au haut de l'élément survolé
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
-      // Déplace l'élément seulement si le curseur a dépassé la moitié de l'élément survolé
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
       }
@@ -303,10 +281,7 @@ const DraggableItem = ({ children, index, moveSection }) => {
         return;
       }
 
-      // Effectue le déplacement
       moveSection(dragIndex, hoverIndex);
-
-      // Met à jour l'index de l'élément déplacé
       item.index = hoverIndex;
     },
   });

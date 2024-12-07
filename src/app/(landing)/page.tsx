@@ -1,6 +1,7 @@
 import prisma from "@/libs/db";
 import Image from "next/image";
 import Link from "next/link";
+import Model from "@/components/wall";
 
 export default async function Home() {
   const latestArticles = await prisma.post.findMany({
@@ -11,14 +12,14 @@ export default async function Home() {
   });
 
   return (
-    <main className=" flex flex-col text-center  px-5 bg-white min-h-screen">
+    <main className="flex flex-col text-center px-5 bg-white min-h-screen">
       {/* Hero Section */}
       <Image
         width={300}
         height={300}
         src="/logo.jpeg"
         alt="Action Verticale"
-        className=" items-center justify-center mx-auto w-48 my-10  m- h-auto"
+        className="items-center justify-center mx-auto w-48 my-10"
       />
       <section className="flex flex-col items-center justify-center h-96 bg-fixed bg-parallax mb-24 bg-cover py-16 text-white font-semibold mx-16 rounded-3xl">
         <p className="text-3xl">Escalade Club La Rivière</p>
@@ -27,8 +28,9 @@ export default async function Home() {
           d’Escalade.
         </p>
       </section>
+
       {/* Latest Articles Section */}
-      <section id="latest-articles" className=" grid  place-items-center p-8">
+      <section id="latest-articles" className="grid place-items-center p-8">
         <div className="max-w-5xl mx-auto px-4">
           <h6 className="block antialiased tracking-normal font-sans text-[18px] font-bold leading-relaxed text-gray-800 mb-2">
             Derniers articles de blog
@@ -58,7 +60,7 @@ export default async function Home() {
                 </div>
                 <div className="p-6 text-start overflow-hidden">
                   <p className="block antialiased font-sans text-sm font-light leading-normal text-blue-500 mb-2 ">
-                    Actualitées
+                    Actualités
                   </p>
                   <Link href={`/posts/${article.id}`}>
                     <h3 className="block antialiased tracking-normal font-sans text-xl font-semibold leading-snug text-blue-gray-900 mb-2 normal-case transition-colors hover:text-gray-900">
@@ -81,7 +83,7 @@ export default async function Home() {
                       <p className="block antialiased font-sans text-sm font-light leading-normal text-blue-gray-900 mb-0.5 !font-medium">
                         Action Verticale
                       </p>
-                      <p className="block antialiased font-sans text-gray-700 text-xs  font-normal">
+                      <p className="block antialiased font-sans text-gray-700 text-xs font-normal">
                         20.01.24
                       </p>
                     </div>
@@ -96,20 +98,18 @@ export default async function Home() {
       {/* About Section */}
       <section
         id="about"
-        className="py-16 mt-16 bg-parallax2 bg-fixed bg-cover mx-16 rounded-3xl "
+        className="py-16 mt-16 bg-parallax2 bg-fixed bg-cover mx-16 rounded-3xl text-white"
       >
-        <div className="max-w-5xl mx-auto px-4 ">
-          <h2 className="text-3xl font-bold mb-6 text-white">
-            À propos du club
-          </h2>
-          <div className="flex flex-row gap-16 items-center justify-center text-white font-semibold text-2xl">
-            <div className="flex flex-col">
-              <p className="leading-8 text-white mb-6 font-sans font-medium text-start">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-6">À propos du club</h2>
+          <div className="flex flex-row gap-16 items-center justify-center">
+            <div className="flex flex-col text-left">
+              <p className="leading-8 mb-6">
                 Action Verticale est un club d’escalade qui a pour vocation
                 d’offrir aux adhérents la possibilité de découvrir une pratique
                 sportive en plein développement.
               </p>
-              <p className="leading-8 text-white font-sans font-medium mb-6 text-start">
+              <p className="leading-8 mb-6">
                 L’escalade développe de nombreuses qualités physiques et
                 sollicite l’interprétation et l’anticipation pour effectuer les
                 bons mouvements. On vous propose de devenir autonome dans la
@@ -129,8 +129,32 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Wall Visualization Section */}
+      <section
+        id="wall"
+        className="py-16 mt-16 bg-gray-50 mx-16 rounded-3xl shadow-lg"
+      >
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-6 text-gray-800">
+            Visualiser le mur d’escalade
+          </h2>
+          <div className="h-[500px] rounded-3xl overflow-hidden border bg-gray-200">
+          <iframe
+              src="club/sae" /* Mettre l'URL correcte du fichier GLB ici */
+              className="w-full h-full"
+              allowFullScreen
+              frameBorder="0"
+            ></iframe>
+          </div>
+          <p className="mt-6 text-lg text-gray-600">
+            Explorez notre mur d’escalade en 3D pour visualiser ses différentes
+            configurations et emplacements.
+          </p>
+        </div>
+      </section>
+
       {/* Call to Action Section */}
-      <section className="py-10 bg-blue-400 bg-blend-darken text-white mx-48 my-16 rounded-2xl">
+      <section className="py-10 bg-blue-400 text-white mx-48 my-16 rounded-2xl">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
             Rejoignez Action Verticale!
@@ -140,12 +164,12 @@ export default async function Home() {
             dès aujourd'hui et faites le premier pas vers de nouveaux sommets
             avec Action Verticale.
           </p>
-          <a
+          <Link
             href="/contact"
             className="px-8 py-4 bg-white text-blue-500 rounded-md text-lg hover:bg-gray-200 transition duration-300"
           >
             Inscrivez-vous maintenant
-          </a>
+          </Link>
         </div>
       </section>
     </main>
