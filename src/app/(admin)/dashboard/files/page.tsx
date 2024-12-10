@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiTrash, FiEye, FiCheck, FiPlus, FiVideo, FiX, FiLink } from "react-icons/fi";
+import {
+  FiTrash,
+  FiEye,
+  FiCheck,
+  FiPlus,
+  FiVideo,
+  FiX,
+  FiLink,
+} from "react-icons/fi";
 import Alert from "@/components/alert";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -20,11 +28,10 @@ const AdminFilesPage = () => {
   useEffect(() => {
     fetchFiles(1); // Réinitialise les fichiers lors de la modification de la recherche
   }, [searchQuery]);
-  
+
   useEffect(() => {
     fetchFiles(page); // Charge les fichiers lors du défilement
   }, [page]);
-  
 
   useEffect(() => {
     if (selectedFiles.length === 0) {
@@ -35,13 +42,15 @@ const AdminFilesPage = () => {
   const fetchFiles = async (pageNumber) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/files?page=${pageNumber}&limit=10&search=${searchQuery}`);
+      const res = await fetch(
+        `/api/files?page=${pageNumber}&limit=10&search=${searchQuery}`
+      );
       if (res.ok) {
         const data = await res.json();
         if (pageNumber === 1) {
           setFiles(data.files);
         } else {
-          setFiles(prevFiles => [...prevFiles, ...data.files]);
+          setFiles((prevFiles) => [...prevFiles, ...data.files]);
         }
         setHasMore(data.hasMore);
       } else {
@@ -95,7 +104,10 @@ const AdminFilesPage = () => {
       });
 
       if (res.ok) {
-        setAlert({ type: "success", message: "Fichier téléchargé avec succès" });
+        setAlert({
+          type: "success",
+          message: "Fichier téléchargé avec succès",
+        });
         resetTableAndFetchFiles(); // Recharger les fichiers après upload
       } else {
         throw new Error("Échec du téléchargement du fichier");
@@ -144,7 +156,10 @@ const AdminFilesPage = () => {
     if (selectedFiles.length > 0) {
       setIsDeleteModalOpen(true);
     } else {
-      setAlert({ type: "warning", message: "Aucun fichier sélectionné pour la suppression" });
+      setAlert({
+        type: "warning",
+        message: "Aucun fichier sélectionné pour la suppression",
+      });
     }
   };
 
@@ -167,11 +182,15 @@ const AdminFilesPage = () => {
   };
 
   const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight && hasMore && !loading) {
-      setPage(prevPage => prevPage + 1);
+    if (
+      window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight &&
+      hasMore &&
+      !loading
+    ) {
+      setPage((prevPage) => prevPage + 1);
     }
   };
-  
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -188,22 +207,31 @@ const AdminFilesPage = () => {
             placeholder="Rechercher un fichier..."
             value={searchQuery}
             onChange={(e) => {
-  setSearchQuery(e.target.value);
-  setFiles([]); // Clear current files
-  setPage(1); // Reset to page 1
-}}
-
+              setSearchQuery(e.target.value);
+              setFiles([]); // Clear current files
+              setPage(1); // Reset to page 1
+            }}
             className="border border-gray-300 rounded-lg px-4 py-2 mb-4 sm:mb-0"
           />
           <label className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 cursor-pointer">
             <FiPlus className="w-5 h-5" />
             <span>Ajouter un fichier</span>
-            <input type="file" accept=".pdf,.doc,.docx,.txt,.odt,.ppt,.pptx,.xls,.xlsx,video/*" className="hidden" onChange={handleAddFile} />
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.odt,.ppt,.pptx,.xls,.xlsx,video/*"
+              className="hidden"
+              onChange={handleAddFile}
+            />
           </label>
           <label className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 cursor-pointer">
             <FiVideo className="w-5 h-5" />
             <span>Ajouter une vidéo</span>
-            <input type="file" accept="video/*" className="hidden" onChange={handleAddVideo} />
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={handleAddVideo}
+            />
           </label>
         </div>
       </div>
@@ -219,18 +247,32 @@ const AdminFilesPage = () => {
         <table className="w-full text-sm text-left text-gray-500">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 max-w-xs truncate">Nom du fichier</th>
-              <th scope="col" className="px-6 py-3">Type</th>
-              <th scope="col" className="px-6 py-3">Taille</th>
-              <th scope="col" className="px-6 py-3">Date d'ajout</th>
-              <th scope="col" className="px-6 py-3">Actions</th>
+              <th scope="col" className="px-6 py-3 max-w-xs truncate">
+                Nom du fichier
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Type
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Taille
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Date d'ajout
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {files.map((file) => (
               <tr
                 key={file.name}
-                className={`border-b cursor-pointer ${selectedFiles.includes(file.name) ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+                className={`border-b cursor-pointer ${
+                  selectedFiles.includes(file.name)
+                    ? "bg-gray-100"
+                    : "hover:bg-gray-50"
+                }`}
                 onClick={() => handleRowClick(file)}
               >
                 <td className="px-6 py-4 font-medium text-gray-900 max-w-xs truncate">
@@ -242,14 +284,20 @@ const AdminFilesPage = () => {
                   {new Date(file.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 flex space-x-4 items-center">
-                  <a href={`/files/${file.name}`} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={`/files/${file.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <FiEye className="text-blue-600 cursor-pointer w-6 h-6" />
                   </a>
                   <FiLink
                     className="text-gray-600 cursor-pointer w-6 h-6"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCopyLink(`${window.location.origin}/files/${file.name}`);
+                      handleCopyLink(
+                        `${window.location.origin}/files/${file.name}`
+                      );
                     }}
                   />
                   {selectedFiles.includes(file.name) ? (
@@ -277,7 +325,10 @@ const AdminFilesPage = () => {
         {loading && (
           <div className="space-y-4 mt-4">
             {[...Array(5)].map((_, idx) => (
-              <div key={idx} className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
+              <div
+                key={idx}
+                className="flex items-center justify-between p-4 border rounded-lg animate-pulse"
+              >
                 <div className="flex-1">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -311,7 +362,11 @@ const AdminFilesPage = () => {
       )}
 
       <Transition appear show={isDeleteModalOpen} as={React.Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsDeleteModalOpen(false)}>
+        <Dialog
+          as="div"
+          className="relative z-10"
+          onClose={() => setIsDeleteModalOpen(false)}
+        >
           <Transition.Child
             as={React.Fragment}
             enter="ease-out duration-300"
@@ -323,12 +378,16 @@ const AdminFilesPage = () => {
           >
             <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center">
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-medium leading-6 text-gray-900"
+                >
                   Confirmer la suppression
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Êtes-vous sûr de vouloir supprimer le(s) fichier(s) sélectionné(s) ? Cette action est irréversible.
+                    Êtes-vous sûr de vouloir supprimer le(s) fichier(s)
+                    sélectionné(s) ? Cette action est irréversible.
                   </p>
                 </div>
                 <div className="mt-4 flex justify-end">
