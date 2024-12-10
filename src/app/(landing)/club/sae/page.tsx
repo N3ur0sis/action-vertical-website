@@ -1,4 +1,6 @@
-import Model from "@/components/wall";
+import dynamic from "next/dynamic";
+
+const Model = dynamic(() => import("@/components/wall"), { ssr: false });
 
 export default function Home() {
   return (

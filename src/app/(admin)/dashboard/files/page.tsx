@@ -39,7 +39,7 @@ const AdminFilesPage = () => {
     }
   }, [selectedFiles]);
 
-  const fetchFiles = async (pageNumber) => {
+  const fetchFiles = async (pageNumber: number) => {
     setLoading(true);
     try {
       const res = await fetch(
@@ -92,7 +92,7 @@ const AdminFilesPage = () => {
     }
   };
 
-  const handleAddFile = async (event) => {
+  const handleAddFile = async (event: { target: { files: any[] } }) => {
     const formData = new FormData();
     const file = event.target.files[0];
     formData.append("file", file);
@@ -117,7 +117,7 @@ const AdminFilesPage = () => {
     }
   };
 
-  const handleAddVideo = async (event) => {
+  const handleAddVideo = async (event: { target: { files: any[] } }) => {
     const formData = new FormData();
     const file = event.target.files[0];
     formData.append("video", file);
@@ -139,7 +139,7 @@ const AdminFilesPage = () => {
     }
   };
 
-  const toggleSelection = (fileName) => {
+  const toggleSelection = (fileName: any) => {
     if (selectedFiles.includes(fileName)) {
       setSelectedFiles(selectedFiles.filter((name) => name !== fileName));
     } else {
@@ -147,7 +147,7 @@ const AdminFilesPage = () => {
     }
   };
 
-  const handleDeleteClick = (fileName) => {
+  const handleDeleteClick = (fileName: any) => {
     setIsSelectionMode(true);
     toggleSelection(fileName);
   };
@@ -168,12 +168,12 @@ const AdminFilesPage = () => {
     setSelectedFiles([]);
   };
 
-  const handleCopyLink = (link) => {
+  const handleCopyLink = (link: string) => {
     navigator.clipboard.writeText(link);
     setAlert({ type: "info", message: "Lien copié dans le presse-papiers" });
   };
 
-  const handleRowClick = (file) => {
+  const handleRowClick = (file: never) => {
     if (isSelectionMode) {
       toggleSelection(file.name);
     } else {
