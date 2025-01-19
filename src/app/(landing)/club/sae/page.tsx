@@ -1,3 +1,5 @@
+'use client'
+
 import dynamic from "next/dynamic";
 
 const Model = dynamic(() => import("@/components/wall"), { ssr: false });

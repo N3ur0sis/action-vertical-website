@@ -83,7 +83,7 @@ const Gallery = () => {
 
   const confirmDelete = async () => {
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/delete-image', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/delete-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

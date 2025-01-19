@@ -3,16 +3,16 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import Editor from './post-editor/Editor'
+const Editor = dynamic(() => import('./post-editor/Editor'), { ssr: false });
 import CoverImageUploader from './post-editor/CoverImageUploader'
 import Alert from './alert'
 import { createPost } from '@/actions/actions'
 import dynamic from 'next/dynamic'
 
-const ImageGalleryModal = dynamic(() => import('./post-editor/ImageGalleryModal'))
-const FileModal = dynamic(() => import('./post-editor/FileModal'))
-const InsertGalleryModal = dynamic(() => import('./post-editor/InsertGalleryModal'))
-const ImagePreviewModal = dynamic(() => import('./post-editor/ImagePreviewModal'))
+const ImageGalleryModal = dynamic(() => import('./post-editor/ImageGalleryModal'), { ssr: false });
+const FileModal = dynamic(() => import('./post-editor/FileModal'), { ssr: false });
+const InsertGalleryModal = dynamic(() => import('./post-editor/InsertGalleryModal'), { ssr: false });
+const ImagePreviewModal = dynamic(() => import('./post-editor/ImagePreviewModal'), { ssr: false });
 
 const SkeletonLoader = () => (
   <motion.div
@@ -97,7 +97,7 @@ export default function PostEditor() {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images`)
       if (res.ok) {
         const data = await res.json()
         setImages(data.images)

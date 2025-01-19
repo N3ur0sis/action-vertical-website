@@ -7,7 +7,7 @@ const ImageGallery = ({ onSelectImage }) => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images`);
         const data = await res.json();
         if (res.ok) {
           setImages(data.images);

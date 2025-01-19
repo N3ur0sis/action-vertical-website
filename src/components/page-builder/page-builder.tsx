@@ -111,7 +111,7 @@ const PageBuilder = ({ pageId, initialSections }) => {
           order: sections.length + 1,
         };
 
-        const response = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newSection),
@@ -138,7 +138,7 @@ const PageBuilder = ({ pageId, initialSections }) => {
         order: index + 1,
       }));
 
-      const response = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderedSections),
@@ -159,7 +159,7 @@ const PageBuilder = ({ pageId, initialSections }) => {
       if (!sectionId) return;
 
       try {
-        const response = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: sectionId }),

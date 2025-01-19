@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState, useRef, memo } from 'react';
 import { useDrag, useDrop, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -182,7 +184,7 @@ const NavbarManager = ({ showAlert }) => {
   }, []);
 
   const fetchNavbarItems = () => {
-    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar')
+    fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar`)
       .then((res) => res.json())
       .then((data) => {
         setNavbarItems(data);
@@ -276,7 +278,7 @@ const NavbarManager = ({ showAlert }) => {
       parentId: item.parentId,
     }));
 
-    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
+    fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderedItems),
@@ -316,7 +318,7 @@ const NavbarManager = ({ showAlert }) => {
 
     const method = editingItem ? 'PUT' : 'POST';
 
-    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
+    fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar`, {
       method: method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -356,7 +358,7 @@ const NavbarManager = ({ showAlert }) => {
       return;
     }
 
-    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
+    fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: item.id }),
