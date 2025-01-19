@@ -3,17 +3,16 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import dynamic from 'next/dynamic'
 import Editor from './post-editor/Editor'
 import CoverImageUploader from './post-editor/CoverImageUploader'
 import Alert from './alert'
 import { createPost } from '@/actions/actions'
+import dynamic from 'next/dynamic'
 
-// Dynamic imports with Suspense fallback
-const ImageGalleryModal = dynamic(() => import('./post-editor/ImageGalleryModal'), { ssr: false })
-const FileModal = dynamic(() => import('./post-editor/FileModal'), { ssr: false })
-const InsertGalleryModal = dynamic(() => import('./post-editor/InsertGalleryModal'), { ssr: false })
-const ImagePreviewModal = dynamic(() => import('./post-editor/ImagePreviewModal'), { ssr: false })
+const ImageGalleryModal = dynamic(() => import('./post-editor/ImageGalleryModal'))
+const FileModal = dynamic(() => import('./post-editor/FileModal'))
+const InsertGalleryModal = dynamic(() => import('./post-editor/InsertGalleryModal'))
+const ImagePreviewModal = dynamic(() => import('./post-editor/ImagePreviewModal'))
 
 const SkeletonLoader = () => (
   <motion.div
@@ -60,7 +59,7 @@ export default function PostEditor() {
 
   const showAlert = useCallback((type, message) => {
     setAlert({ type, message, isVisible: true })
-    setTimeout(() => setAlert({ type: '', message: '', isVisible: false }), 3000)
+    setTimeout(() => setAlert({ type, message, isVisible: false }), 3000)
   }, [])
 
   const handleInsertImage = useCallback((imageUrl) => {
@@ -98,15 +97,15 @@ export default function PostEditor() {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images`)
+      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images')
       if (res.ok) {
         const data = await res.json()
-        setImages(data.images || [])
+        setImages(data.images)
       } else {
-        showAlert('error', 'Failed to load images.')
+        showAlert('error', 'Échec du chargement des images.')
       }
-    } catch {
-      showAlert('error', 'An error occurred while fetching images.')
+    } catch (error) {
+      showAlert('error', 'Erreur lors du chargement des images.')
     }
   }, [showAlert])
 
@@ -115,28 +114,33 @@ export default function PostEditor() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/files`)
       if (res.ok) {
         const data = await res.json()
-        setFiles(data.files || [])
+        setFiles(data.files)
       } else {
-        console.error('Failed to fetch files.')
+        console.error('Failed to load files')
       }
     } catch (error) {
-      console.error('Error fetching files:', error)
+      console.error('Error loading files:', error)
     }
   }, [])
 
   const handleSubmit = useCallback(async (isPublished) => {
     if (!title) {
-      showAlert('error', 'Title is required to publish the article.')
+      showAlert('error', "Le titre est obligatoire pour publier l'article.")
       return
     }
     try {
-      await createPost({ title, content: model, coverImage, isPublished })
-      showAlert('success', `Article ${isPublished ? 'published' : 'saved as draft'} successfully!`)
+      await createPost({
+        title,
+        content: model,
+        coverImage,
+        isPublished,
+      })
+      showAlert('success', `Article ${isPublished ? 'publié' : 'mis en brouillon'} avec succès!`)
       setTitle('')
       setModel('')
       setCoverImage('/bg.jpeg')
-    } catch {
-      showAlert('error', 'Error while publishing the article.')
+    } catch (error) {
+      showAlert('error', "Erreur lors de la publication de l'article.")
     }
   }, [title, model, coverImage, showAlert])
 
@@ -146,12 +150,12 @@ export default function PostEditor() {
 
   return (
     <motion.main
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5 }}
-      className="mx-auto max-w-4xl p-8"
-    >
+  ref={ref}
+  initial={{ opacity: 0, y: 20 }}
+  animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+  transition={{ duration: 0.5 }}
+  className="mx-auto max-w-4xl p-8"
+>
       <AnimatePresence>
         {alert.isVisible && (
           <motion.div
@@ -167,28 +171,38 @@ export default function PostEditor() {
           </motion.div>
         )}
       </AnimatePresence>
-
       <motion.div
         className="bg-white rounded-lg shadow-lg p-6 border border-gray-200"
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Create New Article</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+          Créer un nouvel article
+        </h2>
         <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
           <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              Titre
+            </label>
             <input
               type="text"
+              name="title"
               id="title"
+              placeholder="Titre du nouvel article"
+              required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
             />
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-            <CoverImageUploader coverImage={coverImage} setCoverImage={setCoverImage} />
+            <CoverImageUploader
+              coverImage={coverImage}
+              setCoverImage={setCoverImage}
+              onClick={() => setIsImagePreviewOpen(true)}
+            />
           </motion.div>
 
           <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
@@ -197,77 +211,95 @@ export default function PostEditor() {
 
           <div className="flex gap-4">
             <motion.button
-              onClick={() => { fetchImages(); setIsGalleryOpen(true) }}
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              type="button"
+              className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
+              onClick={() => {
+                fetchImages()
+                setIsGalleryOpen(true)
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Insert Image
+              Insérer une image
             </motion.button>
             <motion.button
-              onClick={() => { fetchFiles(); setIsFileModalOpen(true) }}
-              className="bg-orange-600 text-white px-4 py-2 rounded"
+              type="button"
+              className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+              onClick={() => {
+                fetchFiles()
+                setIsFileModalOpen(true)
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Insert File or Video
+              Insérer un fichier ou une vidéo
             </motion.button>
             <motion.button
-              onClick={() => { fetchImages(); setIsInsertGalleryModalOpen(true) }}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              type="button"
+              className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+              onClick={() => {
+                fetchImages()
+                setIsInsertGalleryModalOpen(true)
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Insert Gallery
+              Insérer une galerie
             </motion.button>
           </div>
 
           <div className="mt-6 flex justify-between">
-            <button
+            <motion.button
+              type="button"
+              className="py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none transition duration-150 ease-in-out"
               onClick={() => handleSubmit(false)}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Save as Draft
-            </button>
-            <button
+              Mettre en brouillon
+            </motion.button>
+            <motion.button
+              type="button"
               onClick={() => handleSubmit(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Publish
-            </button>
+              Publier
+            </motion.button>
           </div>
         </form>
       </motion.div>
 
       <Suspense fallback={<div>Loading...</div>}>
-        <ImageGalleryModal
-          isOpen={isGalleryOpen}
-          onClose={() => setIsGalleryOpen(false)}
-          images={images}
-          handleInsertImage={handleInsertImage}
-        />
-      </Suspense>
+  <ImageGalleryModal
+    isOpen={isGalleryOpen}
+    onClose={() => setIsGalleryOpen(false)}
+    images={images}
+    handleInsertImage={handleInsertImage}
+  />
+</Suspense>
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <FileModal
-          isOpen={isFileModalOpen}
-          onClose={() => setIsFileModalOpen(false)}
-          files={files}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          handleInsertMedia={handleInsertMedia}
-        />
-      </Suspense>
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        files={files}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleInsertMedia={handleInsertMedia}
+      />
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <InsertGalleryModal
-          isOpen={isInsertGalleryModalOpen}
-          onClose={() => setIsInsertGalleryModalOpen(false)}
-          onInsert={handleInsertGallery}
-        />
-      </Suspense>
+      <InsertGalleryModal
+        isOpen={isInsertGalleryModalOpen}
+        onClose={() => setIsInsertGalleryModalOpen(false)}
+        onInsert={handleInsertGallery}
+      />
 
-      <Suspense fallback={<div>Loading...</div>}>
-        <ImagePreviewModal
-          isOpen={isImagePreviewOpen}
-          onClose={() => setIsImagePreviewOpen(false)}
-          imageUrl={coverImage}
-        />
-      </Suspense>
+      <ImagePreviewModal
+        isOpen={isImagePreviewOpen}
+        onClose={() => setIsImagePreviewOpen(false)}
+        imageUrl={coverImage}
+      />
     </motion.main>
   )
 }

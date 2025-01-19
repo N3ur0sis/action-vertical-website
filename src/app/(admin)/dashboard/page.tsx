@@ -6,7 +6,7 @@ export default async function Page() {
   const { isAuthenticated } = getKindeServerSession();
 
   if (!(await isAuthenticated())) {
-    redirect("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/auth/login?post_login_redirect_url=/dashboard");
+    redirect(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/auth/login?post_login_redirect_url=/dashboard`);
   }
 
   return (

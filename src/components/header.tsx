@@ -26,7 +26,7 @@ export default function Header() {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar`);
         const data = await res.json();
         // Transforme les titres en majuscules
         const transformedItems = data.map((item) => ({

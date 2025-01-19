@@ -29,10 +29,15 @@ export default function DashboardContent() {
   const [pagesInMenus, setPagesInMenus] = useState<Set<number>>(new Set());
   const router = useRouter();
 
+
+  useEffect(() => {
+    console.log("Environment variable:", process.env.NEXT_PUBLIC_VERCEL_URL);
+  }, []);
+
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/stats");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/stats`);
         const data = await response.json();
         setStats(data);
       } catch (error) {
@@ -44,7 +49,7 @@ export default function DashboardContent() {
 
     async function fetchRecentPosts() {
       try {
-        const response = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/recent-posts");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/recent-posts`);
         const data = await response.json();
         setRecentPosts(data.posts);
       } catch (error) {
@@ -56,7 +61,7 @@ export default function DashboardContent() {
 
     async function fetchMenuData() {
       try {
-        const response = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/menu");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/menu`);
         const data = await response.json();
         setMenuData(data);
       } catch (error) {

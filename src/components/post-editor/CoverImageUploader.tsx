@@ -35,7 +35,7 @@ const CoverImageUploader = ({ coverImage, setCoverImage }) => {
     formData.append("files", file);
 
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_image", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_image`, {
         method: "POST",
         body: formData,
       });

@@ -18,7 +18,7 @@ export async function createPost({
 }) {
   const session = await getKindeServerSession();
   if (!(await session.isAuthenticated())) {
-    redirect("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/auth/login");
+    redirect(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/auth/login`);
   }
 
   await prisma.post.create({
