@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   // Uses connection pooling
-  url = env("POSTGRES_PRISMA_URL")
+  url = env("DATABASE_POSTGRES_PRISMA_URL")
 }
 
 model Post {
