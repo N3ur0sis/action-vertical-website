@@ -23,7 +23,7 @@ const Gallery = () => {
     const fetchImages = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/images?page=${page}&limit=${IMAGES_PER_PAGE}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/images?page=${page}&limit=${IMAGES_PER_PAGE}`);
         const data = await res.json();
 
         // Ajouter uniquement les nouvelles images qui ne sont pas déjà présentes
@@ -83,7 +83,7 @@ const Gallery = () => {
 
   const confirmDelete = async () => {
     try {
-      const res = await fetch('/api/delete-image', {
+      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/delete-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

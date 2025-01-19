@@ -182,7 +182,7 @@ const NavbarManager = ({ showAlert }) => {
   }, []);
 
   const fetchNavbarItems = () => {
-    fetch('/api/navbar')
+    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar')
       .then((res) => res.json())
       .then((data) => {
         setNavbarItems(data);
@@ -276,7 +276,7 @@ const NavbarManager = ({ showAlert }) => {
       parentId: item.parentId,
     }));
 
-    fetch('/api/navbar', {
+    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderedItems),
@@ -316,7 +316,7 @@ const NavbarManager = ({ showAlert }) => {
 
     const method = editingItem ? 'PUT' : 'POST';
 
-    fetch('/api/navbar', {
+    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
       method: method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -356,7 +356,7 @@ const NavbarManager = ({ showAlert }) => {
       return;
     }
 
-    fetch('/api/navbar', {
+    fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/navbar', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: item.id }),

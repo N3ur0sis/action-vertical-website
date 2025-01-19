@@ -97,7 +97,7 @@ export default function PostEditor() {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch('/api/all-images')
+      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images')
       if (res.ok) {
         const data = await res.json()
         setImages(data.images)
@@ -111,7 +111,7 @@ export default function PostEditor() {
 
   const fetchFiles = useCallback(async () => {
     try {
-      const res = await fetch(`/api/files`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/files`)
       if (res.ok) {
         const data = await res.json()
         setFiles(data.files)

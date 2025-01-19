@@ -16,7 +16,7 @@ const PageEditor = () => {
         const slugFromPath = path.split('/').pop(); // Récupère le dernier segment de l'URL
         setSlug(slugFromPath);
 
-        const response = await fetch(`/api/page-content?slug=${slugFromPath}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/page-content?slug=${slugFromPath}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Erreur inconnue');

@@ -43,7 +43,7 @@ const AdminFilesPage = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/files?page=${pageNumber}&limit=10&search=${searchQuery}`
+        `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/files?page=${pageNumber}&limit=10&search=${searchQuery}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -71,7 +71,7 @@ const AdminFilesPage = () => {
 
   const deleteFiles = async () => {
     try {
-      const res = await fetch(`/api/deleting-files`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/deleting-files`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ const AdminFilesPage = () => {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/upload_file", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_file", {
         method: "POST",
         body: formData,
       });
@@ -123,7 +123,7 @@ const AdminFilesPage = () => {
     formData.append("video", file);
 
     try {
-      const res = await fetch("/api/upload_video", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_video", {
         method: "POST",
         body: formData,
       });

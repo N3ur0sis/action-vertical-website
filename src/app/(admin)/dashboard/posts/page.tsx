@@ -37,7 +37,7 @@ export default function AdminPostsPage() {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/admin-posts?page=${pageNumber}&limit=10&search=${searchQuery}`
+          `${process.env.NEXT_PUBLIC_VERCEL_URL}/api/admin-posts?page=${pageNumber}&limit=10&search=${searchQuery}`
         );
         if (res.ok) {
           const data = await res.json();
@@ -74,7 +74,7 @@ export default function AdminPostsPage() {
   const updatePost = useCallback(
     async (updatedPost) => {
       try {
-        const res = await fetch("/api/admin-posts", {
+        const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/admin-posts", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export default function AdminPostsPage() {
 
   const deletePosts = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin-posts", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/admin-posts", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +145,7 @@ export default function AdminPostsPage() {
   const handlePublish = useCallback(
     async (postId, isPublished) => {
       try {
-        const res = await fetch("/api/admin-posts", {
+        const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/admin-posts", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

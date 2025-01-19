@@ -10,7 +10,7 @@ const InsertGalleryModal = ({ isOpen, onClose, onInsert }) => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const res = await fetch("/api/all-images");
+        const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images");
         if (res.ok) {
           const data = await res.json();
           setImages(data.images);

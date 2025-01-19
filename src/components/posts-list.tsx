@@ -32,7 +32,7 @@ export default function PostsList() {
   // Fonction pour charger les posts
   const loadPosts = async () => {
     try {
-      const res = await fetch(`/api/posts?page=${page}&limit=6`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/posts?page=${page}&limit=6`);
       if (!res.ok) {
         throw new Error(`Erreur lors du chargement des articles : ${res.statusText}`);
       }

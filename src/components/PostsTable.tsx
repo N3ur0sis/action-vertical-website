@@ -20,7 +20,7 @@ export default function PostsTable({
 
   const handlePublishToggle = async (postId, currentStatus) => {
     try {
-      const response = await fetch(`/api/post-draft`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/post-draft`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

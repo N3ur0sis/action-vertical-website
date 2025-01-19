@@ -36,7 +36,7 @@ const UpdatePost = ({ post, isOpen, onClose, onUpdate }) => {
 
   const fetchFiles = async () => {
     try {
-      const res = await fetch(`/api/files?page=${page}&limit=20`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_VERCEL_URL}/api/files?page=${page}&limit=20`);
       if (res.ok) {
         const data = await res.json();
         setFiles((prevFiles) => [...prevFiles, ...data.files]);
@@ -56,7 +56,7 @@ const UpdatePost = ({ post, isOpen, onClose, onUpdate }) => {
 
   const fetchImages = async () => {
     try {
-      const res = await fetch('/api/all-images'); // Fetching all images at once
+      const res = await fetch('${process.env.NEXT_PUBLIC_VERCEL_URL}/api/all-images'); // Fetching all images at once
       if (res.ok) {
         const data = await res.json();
         setImages(data.images);
@@ -85,7 +85,7 @@ const UpdatePost = ({ post, isOpen, onClose, onUpdate }) => {
     formData.append("files", file);
 
     try {
-      const res = await fetch("/api/upload", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -206,7 +206,7 @@ const UpdatePost = ({ post, isOpen, onClose, onUpdate }) => {
                   "emoticons", "specialCharacters", "insertHR",
                   "clearFormatting", "html", "fullscreen"
                 ],
-                fileUploadURL: '/api/upload_file',
+                fileUploadURL: '${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_file',
                 fileAllowedTypes: ['application/pdf', 'video/mp4', 'video/webm', 'video/ogg'],
                 events: {
                   'file.uploaded': function (response) {

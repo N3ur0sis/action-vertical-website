@@ -44,8 +44,8 @@ const Editor = ({ model, setModel }) => {
           "insertTable", "emoticons", "specialCharacters", "insertHR",
           "clearFormatting", "html", "fullscreen"
         ],
-        fileUploadURL: "/api/upload_file",
-        imageUploadURL: "/api/upload_image?type=froala",
+        fileUploadURL: "${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_file",
+        imageUploadURL: "${process.env.NEXT_PUBLIC_VERCEL_URL}/api/upload_image?type=froala",
         fileAllowedTypes: [
           "application/pdf", 
           "text/plain", 
