@@ -1,26 +1,22 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { list } from '@vercel/blob';
 
 export async function GET() {
   try {
-    const imageDir = path.join(process.cwd(), 'public/uploads');
-    if (!fs.existsSync(imageDir)) {
-      console.error("Directory not found:", imageDir);
-      return NextResponse.json({ error: "Directory not found" }, { status: 404 });
-    }
+    // Use Vercel Blob's list method to get all images in the "uploads/" folder
+    const blobs = await list({ prefix: 'uploads/' });
 
-    const allImages = fs.readdirSync(imageDir)
-      .filter(file => !file.startsWith('.') && (file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')))
-      .map(file => ({
-        url: `/uploads/${file}`,
-        ctime: fs.statSync(path.join(imageDir, file)).ctime.getTime()
-      }));
+    // Transform blob data into an array of URLs
+    const images = blobs.blobs.map(blob => ({
+      url: blob.url,
+      // Blob storage doesn't provide direct ctime, so use blob.metadata if available
+      ctime: blob.metadata?.createdAt || 0
+    }));
 
     // Sort images by creation time, most recent first
-    allImages.sort((a, b) => b.ctime - a.ctime);
+    images.sort((a, b) => b.ctime - a.ctime);
 
-    return NextResponse.json({ images: allImages.map(image => image.url) });
+    return NextResponse.json({ images: images.map(image => image.url) });
   } catch (error) {
     console.error("Error fetching images:", error);
     return NextResponse.json({ error: "Failed to fetch images" }, { status: 500 });

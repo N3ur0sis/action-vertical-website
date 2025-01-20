@@ -285,7 +285,7 @@ const AdminFilesPage = () => {
                 </td>
                 <td className="px-6 py-4 flex space-x-4 items-center">
                   <a
-                    href={`/files/${file.name}`}
+                    href={file.url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -296,7 +296,7 @@ const AdminFilesPage = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopyLink(
-                        `${window.location.origin}/files/${file.name}`
+                        file.url
                       );
                     }}
                   />

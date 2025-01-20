@@ -1,30 +1,28 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { list } from '@vercel/blob';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-  const imageDir = path.join(process.cwd(), 'public/uploads');
-  const allImages = fs.readdirSync(imageDir)
-    .filter(file => !file.startsWith('.')) // Filtrer les fichiers cachés
-    .map(file => `/uploads/${file}`);
+  try {
+    // Adjust the prefix as needed to match your Vercel Blob store’s folder structure
+    const blobsResponse = await list({
+      prefix: 'uploads/',
+      limit,
+      pageToken: page > 1 ? `page:${page}` : undefined,
+    });
 
-  // Tri des images par date de création (du plus récent au plus ancien)
-  allImages.sort((a, b) => {
-    const aTime = fs.statSync(path.join(imageDir, path.basename(a))).ctime.getTime();
-    const bTime = fs.statSync(path.join(imageDir, path.basename(b))).ctime.getTime();
-    return bTime - aTime;
-  });
+    // Transform blob data into an array of URLs
+    const images = blobsResponse.blobs.map(blob => blob.url);
 
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+    // Check if there are more blobs for the next page
+    const hasMore = !!blobsResponse.nextPageToken;
 
-  // Pagination des images sans duplication
-  const paginatedImages = allImages.slice(startIndex, endIndex);
-  const hasMore = endIndex < allImages.length;
-
-  return NextResponse.json({ images: paginatedImages, hasMore });
+    return NextResponse.json({ images, hasMore });
+  } catch (error) {
+    console.error('Error fetching blobs:', error);
+    return NextResponse.json({ error: 'Failed to fetch images' }, { status: 500 });
+  }
 }

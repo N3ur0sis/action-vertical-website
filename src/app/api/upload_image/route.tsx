@@ -4,6 +4,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
 import sharp from 'sharp';
+import { put } from '@vercel/blob';
 
 // Fonction pour l'upload via Froala
 async function uploadViaFroala(request: Request) {
@@ -22,7 +23,6 @@ async function uploadViaFroala(request: Request) {
         const mimeType = file.type || 'application/octet-stream';
         const extension = mime.extension(mimeType) || 'jpeg';
         const fileName = `${fileId}.${extension}`;
-        const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
 
         // Optimisation du traitement et de la compression avec sharp
         const processedBuffer = await sharp(buffer)
@@ -40,18 +40,23 @@ async function uploadViaFroala(request: Request) {
           })
           .toBuffer();
 
-        await fs.writeFile(filePath, processedBuffer);
+        // Upload the optimized buffer to the "uploads/" folder in Vercel Blob
+        const blob = await put(`uploads/${fileName}`, processedBuffer, {
+          access: 'public',
+          contentType: mimeType,
+        });
 
-        urls.push(`/uploads/${fileName}`);
+        urls.push(blob.url);
       }
     });
 
     await Promise.all(uploadPromises);
 
+    // Return the URL of the first uploaded file
     return NextResponse.json({ link: urls[0] });
   } catch (error) {
-    console.error('Erreur lors de l\'upload des fichiers via Froala:', error);
-    return NextResponse.json({ error: 'Erreur lors de l\'upload des fichiers' }, { status: 500 });
+    console.error("Error during file upload via Froala:", error);
+    return NextResponse.json({ error: "Error uploading files" }, { status: 500 });
   }
 }
 
@@ -59,24 +64,25 @@ async function uploadViaFroala(request: Request) {
 async function uploadForGallery(request: Request) {
   const formData = await request.formData();
   const files = formData.getAll('files');
-
+  
   const urls: string[] = [];
 
   try {
     const uploadPromises = files.map(async (file) => {
       if (file instanceof Blob) {
+        // Convert the Blob to a Buffer
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
+        // Generate a unique file name
         const fileId = uuidv4();
         const mimeType = file.type || 'application/octet-stream';
         const extension = mime.extension(mimeType) || 'jpeg';
         const fileName = `${fileId}.${extension}`;
-        const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
 
-        // Optimisation du traitement et de la compression avec sharp
+        // Use sharp to process the image
         const processedBuffer = await sharp(buffer)
-          .rotate()
+          .rotate() // Automatically orient the image
           .resize({
             width: 1920,
             height: 1920,
@@ -90,18 +96,23 @@ async function uploadForGallery(request: Request) {
           })
           .toBuffer();
 
-        await fs.writeFile(filePath, processedBuffer);
+        // Upload the optimized image buffer to Vercel Blob
+        const blob = await put(`uploads/${fileName}`, processedBuffer, {
+          access: 'public',
+          contentType: mimeType,
+        });
 
-        urls.push(`/uploads/${fileName}`);
+        // Add the blob URL to the result list
+        urls.push(blob.url);
       }
     });
 
     await Promise.all(uploadPromises);
 
-    return NextResponse.json({ urls });
+    return new Response(JSON.stringify({ urls }), { status: 200 });
   } catch (error) {
-    console.error('Erreur lors de l\'upload des fichiers:', error);
-    return NextResponse.json({ error: 'Erreur lors de l\'upload des fichiers' }, { status: 500 });
+    console.error("Error during file upload:", error);
+    return new Response(JSON.stringify({ error: "Error uploading files" }), { status: 500 });
   }
 }
 

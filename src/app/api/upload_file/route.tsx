@@ -1,52 +1,32 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { promises as fs } from "fs";
+import { put } from "@vercel/blob";
 
 export const runtime = "nodejs";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file");
+    const file = formData.get("file") as File | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    const originalFileName = file.name || "default.pdf";  // Récupère le nom d'origine du fichier
+    const originalFileName = file.name || "default.pdf";
     const cleanedFileName = originalFileName
       .toLowerCase()
-      .replace(/\s+/g, '-')  // Remplace les espaces par des tirets
-      .replace(/[^a-zA-Z0-9.-]/g, '');  // Enlève les caractères spéciaux sauf pour les tirets, points et chiffres
+      .replace(/\s+/g, '-') // Replace spaces with dashes
+      .replace(/[^a-zA-Z0-9.-]/g, ''); // Remove special characters except dashes, dots, and numbers
 
-    const filePath = path.join(process.cwd(), "public/files", cleanedFileName);
+    // Upload the file to the "files/" folder in Vercel Blob
+    const blob = await put(`files/${cleanedFileName}`, file, {
+      access: "public",
+      contentType: file.type,
+    });
 
-    // Vérifie si un fichier avec le même nom existe déjà, si oui, ajoute un suffixe
-    let finalFilePath = filePath;
-    let counter = 1;
-    while (await fileExists(finalFilePath)) {
-      const baseName = path.basename(cleanedFileName, path.extname(cleanedFileName));
-      const extension = path.extname(cleanedFileName);
-      finalFilePath = path.join(process.cwd(), "public/files", `${baseName}-${counter}${extension}`);
-      counter += 1;
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(finalFilePath, buffer);
-
-    const finalFileName = path.basename(finalFilePath);
-    return NextResponse.json({ link: `/files/${finalFileName}` });
+    return NextResponse.json({ link: blob.url });
   } catch (error) {
     console.error("Error uploading file:", error);
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
-  }
-}
-
-async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
   }
 }

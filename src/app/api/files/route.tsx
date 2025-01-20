@@ -1,53 +1,53 @@
-import fs from 'fs';
-import path from 'path';
-import { NextResponse } from 'next/server';
+import { list } from "@vercel/blob";
+import { NextResponse } from "next/server";
 
-export const GET = async (req) => {
+export const GET = async (req: Request) => {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
-  const search = searchParams.get('search') || '';
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const search = searchParams.get("search") || "";
 
-  const directoryPath = path.join(process.cwd(), 'public', 'files');
-  
   try {
-    const files = fs.readdirSync(directoryPath).map(file => {
-      const filePath = path.join(directoryPath, file);
-      const stats = fs.statSync(filePath);
-      const fileSizeInBytes = stats.size;
-      const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
-      const fileExtension = path.extname(file).substring(1); // Extension sans le point
-
-      return {
-        name: file,
-        createdAt: stats.birthtime,
-        size: `${fileSizeInMB} Mo`,
-        type: fileExtension.toUpperCase(),
-      };
+    // Fetch files from the "files/" folder in Vercel Blob
+    const blobsResponse = await list({
+      prefix: "files/",
+      limit,
+      pageToken: page > 1 ? `page:${page}` : undefined,
     });
 
-    // Filtrer les fichiers par nom
-    const filteredFiles = files.filter(file => 
-      file.name.toLowerCase().includes(search.toLowerCase())
+    const blobs = blobsResponse.blobs;
+
+    // Filter files by name if a search query is provided
+    const filteredBlobs = search
+      ? blobs.filter((blob) =>
+          blob.pathname.toLowerCase().includes(search.toLowerCase())
+        )
+      : blobs;
+
+    // Map the filtered blobs to match the original structure
+    const mappedFiles = filteredBlobs.map((blob) => ({
+      name: blob.pathname.split("/").pop() || "unknown",
+      url: blob.url, // Add the public URL for the blob
+      createdAt: new Date(blob.metadata?.createdAt || Date.now()),
+      size: `${(blob.size / (1024 * 1024)).toFixed(2)} Mo`,
+      type: blob.pathname.split(".").pop()?.toUpperCase() || "UNKNOWN",
+    }));
+
+    // Sort by creation date (most recent first)
+    const sortedFiles = mappedFiles.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
 
-    // Trier par date de création (du plus récent au plus ancien)
-    const sortedFiles = filteredFiles.sort((a, b) => b.createdAt - a.createdAt);
-
-    // Pagination
-    const paginatedFiles = sortedFiles.slice((page - 1) * limit, page * limit);
-
-    // Indicateur pour savoir s'il reste plus de fichiers à charger
-    const hasMore = page * limit < filteredFiles.length;
+    // Determine if there are more files
+    const hasMore = !!blobsResponse.nextPageToken;
 
     return NextResponse.json({
-      files: paginatedFiles,
-      total: filteredFiles.length,
+      files: sortedFiles,
+      total: sortedFiles.length,
       hasMore,
     });
-
   } catch (error) {
-    console.error('Error reading files:', error);
-    return NextResponse.json({ error: 'Failed to load files' }, { status: 500 });
+    console.error("Error fetching files:", error);
+    return NextResponse.json({ error: "Failed to load files" }, { status: 500 });
   }
 };

@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { promises as fs } from "fs";
+import { del } from "@vercel/blob";
 
 export const runtime = "nodejs";
 
-export async function DELETE(request) {
+export async function DELETE(request: Request) {
   try {
     const { files } = await request.json();
 
     for (const fileName of files) {
-      const filePath = path.join(process.cwd(), "public/files", fileName);
-      await fs.unlink(filePath);
+      // Construct the blob path (e.g., files/example.pdf)
+      const blobPath = `files/${fileName}`;
+
+      // Attempt to delete the file from Vercel Blob
+      await del(blobPath);
     }
 
     return NextResponse.json({ success: true });

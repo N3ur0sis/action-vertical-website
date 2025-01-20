@@ -113,8 +113,8 @@ const renderSection = (section) => {
   }
 };
 
-const Page = async ({ params }) => {
-  const { slug } = params;
+export default async function Page({ params }) {
+  const { slug } = await params;
 
   // Récupération du contenu de la page depuis la base de données
   const pageContent = await prisma.pageContent.findMany({
@@ -143,5 +143,3 @@ const Page = async ({ params }) => {
     </div>
   );
 };
-
-export default Page;

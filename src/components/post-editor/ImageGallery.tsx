@@ -19,6 +19,7 @@ const ImageGallery = ({ onSelectImage }) => {
       }
     };
 
+    
     fetchImages();
   }, []);
 

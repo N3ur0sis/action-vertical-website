@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { del } from '@vercel/blob';
 
 export async function POST(request: Request) {
   try {
@@ -9,20 +8,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URLs not provided or incorrect format' }, { status: 400 });
     }
 
-    const errors = [];
+    const errors: string[] = [];
 
-    urls.forEach((url) => {
-      const filePath = path.join(process.cwd(), 'public', url);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (error) {
-          errors.push(`Failed to delete ${url}: ${error.message}`);
-        }
-      } else {
-        errors.push(`File not found: ${url}`);
+    for (const url of urls) {
+      try {
+        // Extract the path within the blob store from the URL
+        // For example, if the URL is https://your-store.vercel-storage.com/uploads/file.jpg,
+        // this would isolate "uploads/file.jpg".
+        const path = new URL(url).pathname.slice(1);
+
+        // Attempt to delete the file from Vercel Blob
+        await del(path);
+      } catch (error) {
+        errors.push(`Failed to delete ${url}: ${error.message}`);
       }
-    });
+    }
 
     if (errors.length > 0) {
       return NextResponse.json({ success: false, errors }, { status: 500 });

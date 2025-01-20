@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/libs/db";
-import fs from "fs";
-import path from "path";
+import { list } from "@vercel/blob";
 
 export async function GET() {
   try {
-    // Récupération du nombre de posts
+    // Count the number of posts
     const totalPosts = await prisma.post.count();
 
-    // Récupération du nombre de fichiers dans le dossier public/files
-    const filesDir = path.join(process.cwd(), "public/files");
-    const totalFiles = fs.readdirSync(filesDir).length;
+    // List files from the "files/" directory in Vercel Blob
+    const filesList = await list({ prefix: "files/" });
+    const totalFiles = filesList.blobs.length;
 
-    // Récupération du nombre d'images dans le dossier public/uploads
-    const imagesDir = path.join(process.cwd(), "public/uploads");
-    const totalImages = fs.readdirSync(imagesDir).length;
+    // List images from the "uploads/" directory in Vercel Blob
+    const imagesList = await list({ prefix: "uploads/" });
+    const totalImages = imagesList.blobs.length;
 
     return NextResponse.json({
       totalPosts,
