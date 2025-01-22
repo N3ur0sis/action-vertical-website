@@ -177,7 +177,7 @@ const AdminFilesPage = () => {
     if (isSelectionMode) {
       toggleSelection(file.name);
     } else {
-      handleCopyLink(`${window.location.origin}/files/${file.name}`);
+      handleCopyLink(`${file.url}`);
     }
   };
 

@@ -60,7 +60,7 @@ export default function FileModal({ isOpen, onClose, files, searchQuery, setSear
                           <td className="py-2 px-4 border-b">
                             <button
                               className="bg-blue-500 text-white py-1 px-3 rounded"
-                              onClick={() => handleInsertMedia(`/files/${file.name}`)}
+                              onClick={() => handleInsertMedia(`${file.url}`)}
                             >
                               Insérer
                             </button>
