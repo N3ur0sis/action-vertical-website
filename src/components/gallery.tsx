@@ -129,7 +129,7 @@ const Gallery = () => {
           if (isSelectionMode) {
             handleDeleteClick(src);
           } else {
-            handleCopyLink(`${window.location.origin}${src}`);
+            handleCopyLink(`${src}`);
           }
         }}
         style={{ userSelect: 'none' }} // Désactiver la sélection du texte pour éviter les bugs visuels
