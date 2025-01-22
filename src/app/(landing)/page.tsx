@@ -53,7 +53,7 @@ export default async function Home() {
                   <Image
                     width={768}
                     height={768}
-                    src="/parallax.jpeg"
+                    src={article.coverImage}
                     alt={article.title}
                     className="h-full w-full scale-110 object-cover"
                   />
@@ -84,7 +84,11 @@ export default async function Home() {
                         Action Verticale
                       </p>
                       <p className="block antialiased font-sans text-gray-700 text-xs font-normal">
-                        20.01.24
+                      
+
+
+                        
+                        {article.createdAt.toLocaleDateString('fr-FR',{year: 'numeric', month: 'numeric', day: 'numeric'})}
                       </p>
                     </div>
                   </div>
