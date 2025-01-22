@@ -414,7 +414,7 @@ const UpdatePost = ({ post, isOpen, onClose, onUpdate }) => {
                             <td className="py-2 px-4 border-b">
                               <button
                                 className="bg-blue-500 text-white py-1 px-3 rounded"
-                                onClick={() => handleInsertFile(`/files/${file.name}`)}
+                                onClick={() => handleInsertFile(`${file.url}`)}
                               >
                                 Insérer
                               </button>
