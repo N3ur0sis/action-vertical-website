@@ -37,7 +37,7 @@ const renderSection = (section) => {
     case 'IMAGE':
       return (
         <img
-          src={content.url}
+          src={content.src}
           alt={content.alt || ''}
           className="mx-auto my-8 max-w-full h-auto"
         />
@@ -99,7 +99,7 @@ const renderSection = (section) => {
       return (
         <div className="my-8">
           <iframe
-            src={content.url}
+            src={content.src}
             width="100%"
             height="600px"
             className="border"
