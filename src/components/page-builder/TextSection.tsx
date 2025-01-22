@@ -1,21 +1,18 @@
-// TextSection.jsx
-
 import React, { useState, useEffect } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 const TextSection = ({ section, updateSection }) => {
-  // État local pour le contenu du texte et l'alignement
-  const [content, setContent] = useState(section.content.text || '');
-  const [alignment, setAlignment] = useState(section.content.alignment || 'left');
+  const [content, setContent] = useState(section.content?.text || '');
+  const [alignment, setAlignment] = useState(section.content?.alignment || 'left');
 
-  // Met à jour l'état local lorsque les props changent
   useEffect(() => {
-    setContent(section.content.text || '');
-    setAlignment(section.content.alignment || 'left');
+    setContent(section.content?.text || '');
+    setAlignment(section.content?.alignment || 'left');
   }, [section.content]);
 
-  // Gestionnaire de changement de contenu
   const handleContentChange = (value) => {
     setContent(value);
     updateSection({
@@ -25,7 +22,6 @@ const TextSection = ({ section, updateSection }) => {
     });
   };
 
-  // Gestionnaire de changement d'alignement
   const handleAlignmentChange = (e) => {
     const newAlignment = e.target.value;
     setAlignment(newAlignment);
@@ -36,7 +32,6 @@ const TextSection = ({ section, updateSection }) => {
     });
   };
 
-  // Configuration des modules de React Quill
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -49,7 +44,6 @@ const TextSection = ({ section, updateSection }) => {
     ],
   };
 
-  // Formats autorisés dans React Quill
   const formats = [
     'header',
     'bold',
@@ -68,7 +62,6 @@ const TextSection = ({ section, updateSection }) => {
     <div className="p-4 border rounded bg-gray-50">
       <h3 className="text-lg font-bold mb-4">Modifier le texte</h3>
 
-      {/* Sélecteur d'alignement */}
       <div className="mb-4">
         <label className="block mb-2 font-semibold">Alignement du texte :</label>
         <select
@@ -83,7 +76,6 @@ const TextSection = ({ section, updateSection }) => {
         </select>
       </div>
 
-      {/* Éditeur de texte enrichi */}
       <ReactQuill
         value={content}
         onChange={handleContentChange}
